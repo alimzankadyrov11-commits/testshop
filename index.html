@@ -5,78 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TestShop</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- Подключаем карту Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        /* БАЗОВЫЕ НАСТРОЙКИ И ШРИФТЫ APPLE */
-        :root {
-            --ios-blue: #007aff;
-            --glass-bg: rgba(255, 255, 255, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.8);
-            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); /* Красивый градиент на фоне */
-            color: #1d1d1f;
-            overflow-x: hidden;
-            padding-bottom: 80px; /* Место под нижнее меню */
-        }
-
-        /* ЭФФЕКТ МАТОВОГО СТЕКЛА С БЛИКАМИ */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), /* Верхний блик */
-                        inset 0 -1px 2px rgba(0, 0, 0, 0.05),  /* Нижняя тень */
-                        var(--glass-shadow); /* Внешняя тень */
-            border-radius: 24px;
-        }
-
-        /* СТРАНИЦЫ */
+        :root { --ios-blue: #007aff; --glass-bg: rgba(255, 255, 255, 0.65); --glass-border: rgba(255, 255, 255, 0.8); --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); color: #1d1d1f; overflow-x: hidden; padding-bottom: 80px; }
+        .glass { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(0, 0, 0, 0.05), var(--glass-shadow); border-radius: 24px; }
         .page { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ЗАГОЛОВКИ */
         .header { display: flex; align-items: center; margin-bottom: 20px; margin-top: 10px; }
         .back-btn { background: none; border: none; color: var(--ios-blue); font-size: 17px; font-weight: 500; padding: 0; margin-right: 15px; cursor: pointer; display: none; }
         h1 { font-weight: 700; font-size: 32px; letter-spacing: -0.5px; margin: 0; }
-
-        /* КАТЕГОРИИ */
         .category-list { display: flex; flex-direction: column; gap: 12px; }
         .category-item { padding: 20px; font-size: 18px; font-weight: 600; display: flex; justify-content: space-between; cursor: pointer; transition: transform 0.2s; }
         .category-item:active { transform: scale(0.97); }
-
-        /* ТОВАРЫ */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; display: none; }
         .product-card { padding: 12px; text-align: center; transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
         .product-card:active { transform: scale(0.97); }
         .product-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 16px; margin-bottom: 10px; background: #fff; }
         .product-card h3 { font-size: 14px; margin: 5px 0; font-weight: 600; line-height: 1.2; }
         .product-card .price { font-weight: 600; color: var(--ios-blue); font-size: 16px; margin-bottom: 12px; }
-        
         .buy-btn { width: 100%; padding: 10px; border-radius: 12px; background: var(--ios-blue); color: white; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
         .buy-btn:active { opacity: 0.7; }
-
-        /* НИЖНЕЕ МЕНЮ (ТАБ-БАР) */
-        .tab-bar {
-            position: fixed; bottom: 15px; left: 15px; right: 15px; height: 65px;
-            display: flex; justify-content: space-around; align-items: center;
-            border-radius: 35px; z-index: 1000;
-        }
+        .tab-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; height: 65px; display: flex; justify-content: space-around; align-items: center; border-radius: 35px; z-index: 1000; }
         .tab-item { display: flex; flex-direction: column; align-items: center; color: #8e8e93; font-size: 10px; font-weight: 500; cursor: pointer; transition: color 0.2s; }
         .tab-item.active { color: var(--ios-blue); }
         .tab-icon { font-size: 24px; margin-bottom: 2px; }
-
-        /* КАРТА */
         #map { height: 50vh; width: 100%; border-radius: 20px; margin-top: 15px; border: 1px solid var(--glass-border); z-index: 1; }
         .delivery-info { padding: 20px; margin-top: 15px; text-align: center; }
         .delivery-price { font-size: 24px; font-weight: 700; color: var(--ios-blue); margin-top: 10px; }
@@ -84,7 +40,6 @@
 </head>
 <body>
 
-    <!-- СТРАНИЦА 1: КАТАЛОГ -->
     <div id="page-catalog" class="page active">
         <div class="header">
             <button class="back-btn" id="back-btn" onclick="goBack()">‹ Назад</button>
@@ -94,20 +49,16 @@
         <div id="products-grid" class="grid"></div>
     </div>
 
-    <!-- СТРАНИЦА 2: ДОСТАВКА -->
     <div id="page-delivery" class="page">
         <h1 class="apple-title">Доставка</h1>
-        <p style="color:#666; font-size:14px; margin-bottom: 10px;">Укажите точку на карте (СНГ), чтобы рассчитать стоимость.</p>
-        
+        <p style="color:#666; font-size:14px; margin-bottom: 10px;">Укажите точку на карте для расчета.</p>
         <div id="map"></div>
-        
         <div class="glass delivery-info">
             <div style="font-size: 14px; color: #666;">Примерная стоимость доставки:</div>
             <div id="delivery-price" class="delivery-price">Выберите точку...</div>
         </div>
     </div>
 
-    <!-- НИЖНЕЕ МЕНЮ -->
     <div class="tab-bar glass">
         <div class="tab-item active" onclick="switchTab('catalog', this)">
             <span class="tab-icon">🛍</span> Каталог
@@ -121,78 +72,40 @@
         const tg = window.Telegram.WebApp;
         if (tg) tg.expand();
 
-        // ОГРОМНЫЙ СПИСОК ТОВАРОВ С РЕАЛЬНЫМИ ФОТО
-        const catalog = {
-            "outerwear": {
-                title: "Верхняя одежда",
-                items: [
-                    { id: 'hoodie', name: 'Худи', price: 3500, photo: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'sweatshirt', name: 'Толстовка', price: 3200, photo: 'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'sweatshirt2', name: 'Свитшот', price: 3000, photo: 'https://images.unsplash.com/photo-1620799140188-3b2a02fd9a77?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'cardigan', name: 'Кофта', price: 2800, photo: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'cardigan2', name: 'Кардиган', price: 3800, photo: 'https://images.unsplash.com/photo-1614252369475-531eba8c62d8?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'sweater', name: 'Свитер', price: 4000, photo: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'jumper', name: 'Джемпер', price: 3600, photo: 'https://images.unsplash.com/photo-1608063615781-e2ef8c73d114?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'windbreaker', name: 'Ветровка', price: 4500, photo: 'https://images.unsplash.com/photo-1551106652-a5bcf4b29ab6?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'jacket', name: 'Куртка', price: 8000, photo: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'coat', name: 'Пальто', price: 12000, photo: 'https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'vest', name: 'Жилетка', price: 2500, photo: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=400&auto=format&fit=crop' }
-                ]
-            },
-            "tshirts": {
-                title: "Футболки и верх",
-                items: [
-                    { id: 'tshirt', name: 'Футболка', price: 1500, photo: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'longsleeve', name: 'Лонгслив', price: 1800, photo: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'polo', name: 'Поло', price: 2200, photo: 'https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'tanktop', name: 'Майка', price: 1000, photo: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'shirt', name: 'Рубашка', price: 3000, photo: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'polols', name: 'Поло с длинным рукавом', price: 2500, photo: 'https://images.unsplash.com/photo-1626497764746-6dc36546b388?q=80&w=400&auto=format&fit=crop' }
-                ]
-            },
-            "pants": {
-                title: "Штаны",
-                items: [
-                    { id: 'jeans', name: 'Джинсы', price: 4000, photo: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'joggers', name: 'Джоггеры', price: 3200, photo: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'cargo', name: 'Карго', price: 3800, photo: 'https://images.unsplash.com/photo-1517438476312-10d79c077509?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'sportpants', name: 'Спортивные штаны', price: 2500, photo: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'classicpants', name: 'Классические брюки', price: 4500, photo: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'shorts', name: 'Шорты', price: 2000, photo: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=400&auto=format&fit=crop' }
-                ]
-            },
-            "shoes": {
-                title: "Обувь",
-                items: [
-                    { id: 'sneakers', name: 'Кроссовки', price: 7000, photo: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'slipons', name: 'Кеды', price: 4500, photo: 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'boots', name: 'Ботинки', price: 8000, photo: 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'dressshoes', name: 'Туфли', price: 6500, photo: 'https://images.unsplash.com/photo-1614252369475-531eba8c62d8?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'sandals', name: 'Сандали', price: 3000, photo: 'https://images.unsplash.com/photo-1603487742131-4160ec999306?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'winterboots', name: 'Сапоги', price: 9000, photo: 'https://images.unsplash.com/photo-1542840410-3092f99611a3?q=80&w=400&auto=format&fit=crop' }
-                ]
-            },
-            "accessories": {
-                title: "Аксессуары",
-                items: [
-                    { id: 'underwear', name: 'Трусы', price: 800, photo: 'https://images.unsplash.com/photo-1591348278863-a8fb3887e2aa?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'boxers', name: 'Боксеры', price: 1000, photo: 'https://images.unsplash.com/photo-1584865288642-42078afe6942?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'innertank', name: 'Майка (нижняя)', price: 700, photo: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'pajamas', name: 'Пижама', price: 2500, photo: 'https://images.unsplash.com/photo-1618354691229-88d47f285158?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'robe', name: 'Халат', price: 3000, photo: 'https://images.unsplash.com/photo-1592878940526-0214b0f374f6?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'homepants', name: 'Домашние штаны', price: 1500, photo: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?q=80&w=400&auto=format&fit=crop' },
-                    { id: 'socks', name: 'Носки', price: 500, photo: 'https://images.unsplash.com/photo-1582966772191-b7d61d8890e1?q=80&w=400&auto=format&fit=crop' }
-                ]
-            }
-        };
+        // ТВОИ ДАННЫЕ ДЛЯ ПОДКЛЮЧЕНИЯ К БАЗЕ
+        const BIN_ID = "6b03f367ac6210605a9d6544";
+        const MASTER_KEY = "$2a$10$N4Bo3Ce.syteyZ3fcwyhMOLONFcaF6IszommguuY.EIpLqr4WUt3O"; 
+        
+        let catalog = {};
+        const catTitles = { outerwear: "Верхняя одежда", tshirts: "Футболки и верх", pants: "Штаны", shoes: "Обувь", accessories: "Аксессуары" };
 
-        // ЭЛЕМЕНТЫ
         const categoryScreen = document.getElementById('category-screen');
         const productsGrid = document.getElementById('products-grid');
         const pageTitle = document.getElementById('page-title');
         const backBtn = document.getElementById('back-btn');
 
-        // ФУНКЦИИ КАТАЛОГА
+        // ЗАГРУЗКА ТОВАРОВ ИЗ БАЗЫ
+        async function loadCatalog() {
+            try {
+                // Мы используем Master Key для чтения, чтобы точно сработало
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': MASTER_KEY }
+                });
+                const data = await res.json();
+                catalog = data.record;
+
+                for (let key in catalog) {
+                    if (catalog[key].length > 0) {
+                        catalog[key].title = catTitles[key];
+                    }
+                }
+                renderCategories();
+            } catch (e) {
+                console.error("Ошибка загрузки:", e);
+                categoryScreen.innerHTML = "<p>Ошибка загрузки каталога.</p>";
+            }
+        }
+
         function renderCategories() {
             pageTitle.innerText = "Каталог";
             backBtn.style.display = "none";
@@ -200,26 +113,28 @@
             categoryScreen.style.display = "flex";
             categoryScreen.innerHTML = "";
 
-            for (const [catId, catData] of Object.entries(catalog)) {
-                const div = document.createElement('div');
-                div.className = 'category-item glass'; // Применяем стекло
-                div.innerHTML = `<span>${catData.title}</span><span style="color:#c7c7cc">›</span>`;
-                div.onclick = () => renderProducts(catId);
-                categoryScreen.appendChild(div);
+            for (const [catId, items] of Object.entries(catalog)) {
+                // Показываем категорию, только если в ней есть товары
+                if (items.length > 0) {
+                    const div = document.createElement('div');
+                    div.className = 'category-item glass';
+                    div.innerHTML = `<span>${catTitles[catId]}</span><span style="color:#c7c7cc">›</span>`;
+                    div.onclick = () => renderProducts(catId);
+                    categoryScreen.appendChild(div);
+                }
             }
         }
 
         function renderProducts(catId) {
-            const category = catalog[catId];
-            pageTitle.innerText = category.title;
+            pageTitle.innerText = catTitles[catId];
             backBtn.style.display = "block";
             categoryScreen.style.display = "none";
             productsGrid.style.display = "grid";
             productsGrid.innerHTML = "";
 
-            category.items.forEach(p => {
+            catalog[catId].forEach(p => {
                 const card = document.createElement('div');
-                card.className = 'product-card glass'; // Применяем стекло
+                card.className = 'product-card glass';
                 card.innerHTML = `
                     <img src="${p.photo}" alt="${p.name}">
                     <h3>${p.name}</h3>
@@ -228,7 +143,6 @@
                 `;
                 productsGrid.appendChild(card);
             });
-            
             if (tg) tg.HapticFeedback.impactOccurred('light');
         }
 
@@ -237,91 +151,44 @@
             if (tg) tg.HapticFeedback.impactOccurred('light');
         }
 
-        // ЛОГИКА ПОКУПКИ
         function buy(id, name, price) {
             if (tg) tg.HapticFeedback.notificationOccurred('success');
             const orderData = { id: id, name: name, price: price };
-            if (tg) {
-                tg.sendData(JSON.stringify(orderData)); 
-                tg.close(); 
-            } else {
-                alert(`Вы купили ${name} за ${price} руб.`);
-            }
+            if (tg) { tg.sendData(JSON.stringify(orderData)); tg.close(); } 
+            else { alert(`Куплено: ${name} за ${price} руб.`); }
         }
 
-        // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (ТАБ-БАР)
         function switchTab(tabName, element) {
-            // Убираем активный класс со всех табов и страниц
             document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-            
-            // Добавляем активный класс нужным
             element.classList.add('active');
             document.getElementById(`page-${tabName}`).classList.add('active');
-            
             if (tg) tg.HapticFeedback.selectionChanged();
-
-            // Если открыли карту, надо обновить её размер (иначе Leaflet тупит)
-            if (tabName === 'delivery' && map) {
-                setTimeout(() => { map.invalidateSize(); }, 100);
-            }
+            if (tabName === 'delivery' && map) setTimeout(() => { map.invalidateSize(); }, 100);
         }
 
-        // ИНИЦИАЛИЗАЦИЯ КАРТЫ
         let map;
-        const HQ_LAT = 43.238949; // Алматы (Широта)
-        const HQ_LNG = 76.889709; // Алматы (Долгота)
-        const BASE_PRICE = 500;   // Базовая цена (руб)
-        const PRICE_PER_KM = 15;  // Цена за км (руб)
+        const HQ_LAT = 43.238949; const HQ_LNG = 76.889709;
+        const BASE_PRICE = 500; const PRICE_PER_KM = 15;
 
         function initMap() {
-            // Создаем карту
-            map = L.map('map').setView([HQ_LAT, HQ_LNG], 5); // Центр на СНГ
+            map = L.map('map').setView([HQ_LAT, HQ_LNG], 5);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+            L.marker([HQ_LAT, HQ_LNG]).addTo(map).bindPopup("<b>Склад</b>").openPopup();
 
-            // Добавляем слой (дизайн карты)
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
-                subdomains: 'abcd',
-                maxZoom: 19
-            }).addTo(map);
-
-            // Маркер склада
-            L.marker([HQ_LAT, HQ_LNG]).addTo(map)
-                .bindPopup("<b>Наш склад</b><br>Отсюда едет посылка.").openPopup();
-
-            // Клик по карте
             map.on('click', function(e) {
-                const clickLat = e.latlng.lat;
-                const clickLng = e.latlng.lng;
-
-                // Считаем расстояние в километрах (встроенная функция Leaflet)
                 const start = L.latLng(HQ_LAT, HQ_LNG);
-                const end = L.latLng(clickLat, clickLng);
-                const distanceKm = start.distanceTo(end) / 1000; // в метрах -> в км
-
-                // Считаем цену
-                let price = BASE_PRICE + (distanceKm * PRICE_PER_KM);
-                price = Math.round(price); // Округляем
-
-                // Обновляем текст
-                const priceEl = document.getElementById('delivery-price');
-                priceEl.innerText = `${price} ₽`;
-                
+                const end = L.latLng(e.latlng.lat, e.latlng.lng);
+                const distanceKm = start.distanceTo(end) / 1000;
+                let price = Math.round(BASE_PRICE + (distanceKm * PRICE_PER_KM));
+                document.getElementById('delivery-price').innerText = `${price} ₽`;
                 if (tg) tg.HapticFeedback.impactOccurred('medium');
-
-                // Ставим маркер на место клика
-                L.popup()
-                    .setLatLng(e.latlng)
-                    .setContent(`Доставка сюда:<br><b>${price} ₽</b><br><small>(Расстояние: ${Math.round(distanceKm)} км)</small>`)
-                    .openOn(map);
+                L.popup().setLatLng(e.latlng).setContent(`Доставка:<br><b>${price} ₽</b>`).openOn(map);
             });
         }
 
-        // Запуск при загрузке
-        renderCategories();
-        // Инициализацию карты вызываем с задержкой, чтобы страница успела отрисоваться
+        loadCatalog();
         setTimeout(initMap, 500); 
-
     </script>
 </body>
 </html>
