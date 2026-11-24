@@ -2,59 +2,96 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Админ-панель</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; 
-            background-color: #f2f2f7;
-            background-image: radial-gradient(at 80% 0%, rgba(200, 230, 255, 0.8) 0px, transparent 50%), radial-gradient(at 0% 50%, rgba(255, 220, 230, 0.8) 0px, transparent 50%);
-            background-attachment: fixed; padding: 20px; color: #1d1d1f; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            background-color: #000; color: white; margin: 0; padding: 20px;
+            padding-bottom: env(safe-area-inset-bottom, 20px);
         }
-        .glass { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 24px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.06); }
-        h2 { text-align: center; font-weight: 800; font-size: 24px; margin-top: 0; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 14px; margin: 6px 0; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; box-sizing: border-box; font-size: 15px; background: rgba(255,255,255,0.8); font-family: inherit; }
-        input:focus, select:focus { outline: none; border-color: #007aff; background: #fff; }
-        button { width: 100%; padding: 16px; background: #007aff; color: white; border: none; border-radius: 14px; font-size: 17px; font-weight: 600; margin-top: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); }
-        button:active { background: #005bb5; }
-        .success { color: #34c759; text-align: center; margin-top: 15px; font-weight: 600; display: none; }
+        h2 { font-weight: 800; font-size: 24px; margin-top: 0; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; margin-left: 5px; }
+        input, select {
+            width: 100%; padding: 15px; background: #1c1c1e; border: 1px solid #333;
+            border-radius: 12px; color: white; font-size: 15px; font-family: inherit; box-sizing: border-box;
+        }
+        input:focus, select:focus { outline: none; border-color: #fff; }
         .row { display: flex; gap: 10px; }
         .row > * { flex: 1; }
+        button {
+            width: 100%; padding: 16px; background: white; color: black;
+            border: none; border-radius: 14px; font-size: 16px; font-weight: 700;
+            margin-top: 20px; cursor: pointer;
+        }
+        button:active { background: #ccc; }
+        .success { color: #34c759; text-align: center; margin-top: 15px; font-weight: 600; display: none; }
     </style>
 </head>
 <body>
-    <div class="glass">
-        <h2>🔐 Админ-панель</h2>
-        <input type="text" id="name" placeholder="Название (например, Кроссовки Nike)">
-        
-        <div class="row">
-            <input type="number" id="price" placeholder="Цена (₽)">
-            <input type="number" id="stock" placeholder="Кол-во (шт)">
+    <h2>🔐 Админ-панель</h2>
+    
+    <div class="form-group">
+        <label>Название</label>
+        <input type="text" id="name" placeholder="Кроссовки Nike Air">
+    </div>
+    
+    <div class="row">
+        <div class="form-group">
+            <label>Цена</label>
+            <input type="number" id="price" placeholder="0">
         </div>
-
-        <input type="text" id="sizes" placeholder="Размеры через запятую (S, M, L или 40, 41, 42)">
-        <input type="text" id="photo" placeholder="Ссылка на фото (https://...)">
-        
-        <div class="row">
-            <select id="category">
-                <option value="outerwear">Верхняя одежда</option>
-                <option value="tshirts">Футболки и верх</option>
-                <option value="pants">Штаны</option>
-                <option value="shoes">Обувь</option>
-                <option value="accessories">Аксессуары</option>
+        <div class="form-group">
+            <label>Валюта</label>
+            <select id="currency">
+                <option value="KZT">Тенге (₸)</option>
+                <option value="RUB">Рубли (₽)</option>
+                <option value="UAH">Гривны (₴)</option>
+                <option value="BYN">Бел. рубли (Br)</option>
             </select>
+        </div>
+    </div>
 
+    <div class="row">
+        <div class="form-group">
+            <label>Количество (шт)</label>
+            <input type="number" id="stock" placeholder="0">
+        </div>
+        <div class="form-group">
+            <label>Пол</label>
             <select id="gender">
                 <option value="Унисекс">Унисекс</option>
                 <option value="Мужской">Мужской</option>
                 <option value="Женский">Женский</option>
             </select>
         </div>
-        
-        <button onclick="addProduct()">Добавить товар</button>
-        <div id="msg" class="success">✅ Товар успешно добавлен!</div>
     </div>
+
+    <div class="form-group">
+        <label>Размеры (через запятую)</label>
+        <input type="text" id="sizes" placeholder="S, M, L или 40, 41, 42">
+    </div>
+
+    <div class="form-group">
+        <label>Ссылка на фото</label>
+        <input type="text" id="photo" placeholder="https://...">
+    </div>
+
+    <div class="form-group">
+        <label>Категория</label>
+        <select id="category">
+            <option value="outerwear">Верхняя одежда</option>
+            <option value="tshirts">Футболки и верх</option>
+            <option value="pants">Штаны</option>
+            <option value="shoes">Обувь</option>
+            <option value="accessories">Аксессуары</option>
+        </select>
+    </div>
+    
+    <button onclick="addProduct()">Добавить товар</button>
+    <div id="msg" class="success">✅ Товар добавлен!</div>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -66,42 +103,31 @@
 
         async function addProduct() {
             const name = document.getElementById('name').value;
-            const price = document.getElementById('price').value;
-            const stock = document.getElementById('stock').value;
+            const price = parseInt(document.getElementById('price').value);
+            const stock = parseInt(document.getElementById('stock').value);
+            const currency = document.getElementById('currency').value;
             const sizesStr = document.getElementById('sizes').value;
             let photo = document.getElementById('photo').value;
-            const category = document.getElementById('category').value;
             const gender = document.getElementById('gender').value;
+            const category = document.getElementById('category').value;
 
-            if (!name || !price || !stock) {
-                alert("Заполните название, цену и количество!");
-                return;
-            }
+            if (!name || !price || !stock) { alert("Заполните поля!"); return; }
 
-            // Парсим размеры из строки "S, M, L" в массив ["S", "M", "L"]
-            let sizes = [];
-            if (sizesStr) {
-                sizes = sizesStr.split(',').map(s => s.trim()).filter(s => s);
-            }
+            let sizes = sizesStr ? sizesStr.split(',').map(s => s.trim()).filter(s => s) : [];
+            if (!photo) photo = "https://via.placeholder.com/400x500?text=No+Image";
 
-            if (!photo) photo = "https://via.placeholder.com/300x400?text=No+Image";
-
-            const newProduct = { 
-                id: Date.now().toString(), 
-                name: name, 
-                price: parseInt(price), 
-                stock: parseInt(stock),
-                sizes: sizes,
-                gender: gender,
-                photo: photo 
+            const newProduct = {
+                id: Date.now().toString(),
+                name, price, stock, sizes, gender, photo,
+                currency // Сохраняем валюту
             };
 
             try {
                 const res = await fetch(`${API_URL}/latest`, { headers: { 'X-Master-Key': MASTER_KEY } });
                 const data = await res.json();
                 let db = data.record;
-
                 if (Object.keys(db).length === 0) db = { outerwear: [], tshirts: [], pants: [], shoes: [], accessories: [] };
+                
                 if (!db[category]) db[category] = [];
                 db[category].push(newProduct);
 
@@ -112,17 +138,15 @@
                 });
 
                 document.getElementById('msg').style.display = 'block';
-                setTimeout(() => { document.getElementById('msg').style.display = 'none'; }, 3000);
+                setTimeout(() => document.getElementById('msg').style.display = 'none', 2000);
                 
-                // Очищаем поля
+                // Очистка
                 document.getElementById('name').value = '';
                 document.getElementById('price').value = '';
                 document.getElementById('stock').value = '';
-                document.getElementById('sizes').value = '';
                 document.getElementById('photo').value = '';
 
                 if (tg) tg.HapticFeedback.notificationOccurred('success');
-
             } catch (e) {
                 alert("Ошибка: " + e.message);
             }
