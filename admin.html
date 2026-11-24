@@ -9,67 +9,48 @@
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; 
             background-color: #f2f2f7;
-            background-image: 
-                radial-gradient(at 80% 0%, rgba(200, 230, 255, 0.8) 0px, transparent 50%),
-                radial-gradient(at 0% 50%, rgba(255, 220, 230, 0.8) 0px, transparent 50%),
-                radial-gradient(at 80% 100%, rgba(220, 240, 220, 0.8) 0px, transparent 50%);
-            background-attachment: fixed;
-            padding: 20px; 
-            color: #1d1d1f; 
+            background-image: radial-gradient(at 80% 0%, rgba(200, 230, 255, 0.8) 0px, transparent 50%), radial-gradient(at 0% 50%, rgba(255, 220, 230, 0.8) 0px, transparent 50%);
+            background-attachment: fixed; padding: 20px; color: #1d1d1f; 
         }
-        .glass {
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.06);
-            border-radius: 24px;
-            padding: 24px;
-        }
-        h2 { text-align: center; font-weight: 800; font-size: 26px; letter-spacing: -0.5px; margin-top: 0; margin-bottom: 20px; }
-        input, select { 
-            width: 100%; 
-            padding: 16px; 
-            margin: 8px 0; 
-            border: 1px solid rgba(0,0,0,0.1); 
-            border-radius: 14px; 
-            box-sizing: border-box; 
-            font-size: 16px; 
-            background: rgba(255,255,255,0.8);
-            font-family: inherit;
-        }
+        .glass { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 24px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.06); }
+        h2 { text-align: center; font-weight: 800; font-size: 24px; margin-top: 0; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 14px; margin: 6px 0; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; box-sizing: border-box; font-size: 15px; background: rgba(255,255,255,0.8); font-family: inherit; }
         input:focus, select:focus { outline: none; border-color: #007aff; background: #fff; }
-        button { 
-            width: 100%; 
-            padding: 16px; 
-            background: #007aff; 
-            color: white; 
-            border: none; 
-            border-radius: 16px; 
-            font-size: 17px; 
-            font-weight: 600; 
-            margin-top: 15px; 
-            cursor: pointer; 
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-        }
-        button:active { background: #005bb5; transform: scale(0.98); }
+        button { width: 100%; padding: 16px; background: #007aff; color: white; border: none; border-radius: 14px; font-size: 17px; font-weight: 600; margin-top: 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); }
+        button:active { background: #005bb5; }
         .success { color: #34c759; text-align: center; margin-top: 15px; font-weight: 600; display: none; }
+        .row { display: flex; gap: 10px; }
+        .row > * { flex: 1; }
     </style>
 </head>
 <body>
     <div class="glass">
         <h2>🔐 Админ-панель</h2>
-        <input type="text" id="name" placeholder="Название товара">
-        <input type="number" id="price" placeholder="Цена (в рублях)">
-        <input type="text" id="photo" placeholder="Ссылка на фото (необязательно)">
+        <input type="text" id="name" placeholder="Название (например, Кроссовки Nike)">
         
-        <select id="category">
-            <option value="outerwear">Верхняя одежда</option>
-            <option value="tshirts">Футболки и верх</option>
-            <option value="pants">Штаны</option>
-            <option value="shoes">Обувь</option>
-            <option value="accessories">Аксессуары</option>
-        </select>
+        <div class="row">
+            <input type="number" id="price" placeholder="Цена (₽)">
+            <input type="number" id="stock" placeholder="Кол-во (шт)">
+        </div>
+
+        <input type="text" id="sizes" placeholder="Размеры через запятую (S, M, L или 40, 41, 42)">
+        <input type="text" id="photo" placeholder="Ссылка на фото (https://...)">
+        
+        <div class="row">
+            <select id="category">
+                <option value="outerwear">Верхняя одежда</option>
+                <option value="tshirts">Футболки и верх</option>
+                <option value="pants">Штаны</option>
+                <option value="shoes">Обувь</option>
+                <option value="accessories">Аксессуары</option>
+            </select>
+
+            <select id="gender">
+                <option value="Унисекс">Унисекс</option>
+                <option value="Мужской">Мужской</option>
+                <option value="Женский">Женский</option>
+            </select>
+        </div>
         
         <button onclick="addProduct()">Добавить товар</button>
         <div id="msg" class="success">✅ Товар успешно добавлен!</div>
@@ -86,17 +67,34 @@
         async function addProduct() {
             const name = document.getElementById('name').value;
             const price = document.getElementById('price').value;
+            const stock = document.getElementById('stock').value;
+            const sizesStr = document.getElementById('sizes').value;
             let photo = document.getElementById('photo').value;
             const category = document.getElementById('category').value;
+            const gender = document.getElementById('gender').value;
 
-            if (!name || !price) {
-                alert("Заполните название и цену!");
+            if (!name || !price || !stock) {
+                alert("Заполните название, цену и количество!");
                 return;
             }
 
-            if (!photo) photo = "https://via.placeholder.com/300x300?text=No+Image";
+            // Парсим размеры из строки "S, M, L" в массив ["S", "M", "L"]
+            let sizes = [];
+            if (sizesStr) {
+                sizes = sizesStr.split(',').map(s => s.trim()).filter(s => s);
+            }
 
-            const newProduct = { id: Date.now().toString(), name: name, price: parseInt(price), photo: photo };
+            if (!photo) photo = "https://via.placeholder.com/300x400?text=No+Image";
+
+            const newProduct = { 
+                id: Date.now().toString(), 
+                name: name, 
+                price: parseInt(price), 
+                stock: parseInt(stock),
+                sizes: sizes,
+                gender: gender,
+                photo: photo 
+            };
 
             try {
                 const res = await fetch(`${API_URL}/latest`, { headers: { 'X-Master-Key': MASTER_KEY } });
@@ -116,8 +114,11 @@
                 document.getElementById('msg').style.display = 'block';
                 setTimeout(() => { document.getElementById('msg').style.display = 'none'; }, 3000);
                 
+                // Очищаем поля
                 document.getElementById('name').value = '';
                 document.getElementById('price').value = '';
+                document.getElementById('stock').value = '';
+                document.getElementById('sizes').value = '';
                 document.getElementById('photo').value = '';
 
                 if (tg) tg.HapticFeedback.notificationOccurred('success');
