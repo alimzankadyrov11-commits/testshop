@@ -9,33 +9,73 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        :root { --ios-blue: #007aff; --glass-bg: rgba(255, 255, 255, 0.65); --glass-border: rgba(255, 255, 255, 0.8); --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
-        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); color: #1d1d1f; overflow-x: hidden; padding-bottom: 80px; }
-        .glass { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(0, 0, 0, 0.05), var(--glass-shadow); border-radius: 24px; }
-        .page { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        /* ОБОИ В СТИЛЕ iOS 16/17 (Mesh Gradient) */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f7;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            /* Светлая версия градиента */
+            background-image: 
+                radial-gradient(at 80% 0%, rgba(200, 230, 255, 0.8) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, rgba(255, 220, 230, 0.8) 0px, transparent 50%),
+                radial-gradient(at 80% 100%, rgba(220, 240, 220, 0.8) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #1d1d1f;
+            overflow-x: hidden;
+            padding-bottom: 100px;
+        }
+
+        /* ГЛУБОКОЕ МАТОВОЕ СТЕКЛО (как в iOS) */
+        .glass {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+            border-radius: 24px;
+        }
+
+        .page { display: none; padding: 20px; animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .header { display: flex; align-items: center; margin-bottom: 20px; margin-top: 10px; }
-        .back-btn { background: none; border: none; color: var(--ios-blue); font-size: 17px; font-weight: 500; padding: 0; margin-right: 15px; cursor: pointer; display: none; }
-        h1 { font-weight: 700; font-size: 32px; letter-spacing: -0.5px; margin: 0; }
-        .category-list { display: flex; flex-direction: column; gap: 12px; }
-        .category-item { padding: 20px; font-size: 18px; font-weight: 600; display: flex; justify-content: space-between; cursor: pointer; transition: transform 0.2s; }
-        .category-item:active { transform: scale(0.97); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        /* ТИПОГРАФИКА */
+        .header { display: flex; align-items: center; margin-bottom: 24px; margin-top: 15px; }
+        .back-btn { background: none; border: none; color: #007aff; font-size: 17px; font-weight: 500; padding: 0; margin-right: 15px; cursor: pointer; display: none; }
+        h1 { font-weight: 800; font-size: 34px; letter-spacing: -0.8px; margin: 0; color: #000; }
+
+        /* КАТЕГОРИИ (как настройки iOS) */
+        .category-list { display: flex; flex-direction: column; gap: 10px; }
+        .category-item { padding: 22px 20px; font-size: 18px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s, background 0.2s; }
+        .category-item:active { transform: scale(0.97); background: rgba(255,255,255,0.8); }
+
+        /* ТОВАРЫ (Карточки) */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 16px; display: none; }
         .product-card { padding: 12px; text-align: center; transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
-        .product-card:active { transform: scale(0.97); }
-        .product-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 16px; margin-bottom: 10px; background: #fff; }
-        .product-card h3 { font-size: 14px; margin: 5px 0; font-weight: 600; line-height: 1.2; }
-        .product-card .price { font-weight: 600; color: var(--ios-blue); font-size: 16px; margin-bottom: 12px; }
-        .buy-btn { width: 100%; padding: 10px; border-radius: 12px; background: var(--ios-blue); color: white; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-        .buy-btn:active { opacity: 0.7; }
-        .tab-bar { position: fixed; bottom: 15px; left: 15px; right: 15px; height: 65px; display: flex; justify-content: space-around; align-items: center; border-radius: 35px; z-index: 1000; }
-        .tab-item { display: flex; flex-direction: column; align-items: center; color: #8e8e93; font-size: 10px; font-weight: 500; cursor: pointer; transition: color 0.2s; }
-        .tab-item.active { color: var(--ios-blue); }
-        .tab-icon { font-size: 24px; margin-bottom: 2px; }
-        #map { height: 50vh; width: 100%; border-radius: 20px; margin-top: 15px; border: 1px solid var(--glass-border); z-index: 1; }
-        .delivery-info { padding: 20px; margin-top: 15px; text-align: center; }
-        .delivery-price { font-size: 24px; font-weight: 700; color: var(--ios-blue); margin-top: 10px; }
+        .product-card:active { transform: scale(0.95); }
+        .product-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 18px; margin-bottom: 12px; background: #f2f2f7; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .product-card h3 { font-size: 15px; margin: 0 0 4px 0; font-weight: 700; line-height: 1.2; color: #000; }
+        .product-card .price { font-weight: 600; color: #007aff; font-size: 16px; margin-bottom: 12px; }
+        
+        /* КНОПКА КУПИТЬ */
+        .buy-btn { width: 100%; padding: 12px; border-radius: 14px; background: #007aff; color: white; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); }
+        .buy-btn:active { background: #005bb5; transform: scale(0.98); }
+
+        /* ТАБ-БАР */
+        .tab-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; display: flex; justify-content: space-around; align-items: center; border-radius: 35px; z-index: 1000; }
+        .tab-item { display: flex; flex-direction: column; align-items: center; color: #8e8e93; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .tab-item.active { color: #007aff; }
+        .tab-icon { font-size: 22px; margin-bottom: 4px; }
+
+        /* КАРТА */
+        #map { height: 45vh; width: 100%; border-radius: 24px; margin-top: 15px; border: 1px solid rgba(255, 255, 255, 0.6); z-index: 1; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.06); }
+        .delivery-info { padding: 24px; margin-top: 16px; text-align: center; }
+        .delivery-price { font-size: 28px; font-weight: 800; color: #007aff; margin-top: 8px; letter-spacing: -0.5px; }
     </style>
 </head>
 <body>
@@ -51,10 +91,10 @@
 
     <div id="page-delivery" class="page">
         <h1 class="apple-title">Доставка</h1>
-        <p style="color:#666; font-size:14px; margin-bottom: 10px;">Укажите точку на карте для расчета.</p>
+        <p style="color:#666; font-size:15px; font-weight: 500; margin-bottom: 10px;">Укажите точку на карте для расчета.</p>
         <div id="map"></div>
         <div class="glass delivery-info">
-            <div style="font-size: 14px; color: #666;">Примерная стоимость доставки:</div>
+            <div style="font-size: 15px; color: #666; font-weight: 500;">Примерная стоимость доставки:</div>
             <div id="delivery-price" class="delivery-price">Выберите точку...</div>
         </div>
     </div>
@@ -72,7 +112,6 @@
         const tg = window.Telegram.WebApp;
         if (tg) tg.expand();
 
-        // ТВОИ ДАННЫЕ ДЛЯ ПОДКЛЮЧЕНИЯ К БАЗЕ
         const BIN_ID = "6b03f367ac6210605a9d6544";
         const MASTER_KEY = "$2a$10$N4Bo3Ce.syteyZ3fcwyhMOLONFcaF6IszommguuY.EIpLqr4WUt3O"; 
         
@@ -84,25 +123,15 @@
         const pageTitle = document.getElementById('page-title');
         const backBtn = document.getElementById('back-btn');
 
-        // ЗАГРУЗКА ТОВАРОВ ИЗ БАЗЫ
         async function loadCatalog() {
             try {
-                // Мы используем Master Key для чтения, чтобы точно сработало
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': MASTER_KEY }
-                });
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: { 'X-Master-Key': MASTER_KEY } });
                 const data = await res.json();
                 catalog = data.record;
-
-                for (let key in catalog) {
-                    if (catalog[key].length > 0) {
-                        catalog[key].title = catTitles[key];
-                    }
-                }
                 renderCategories();
             } catch (e) {
-                console.error("Ошибка загрузки:", e);
-                categoryScreen.innerHTML = "<p>Ошибка загрузки каталога.</p>";
+                console.error(e);
+                categoryScreen.innerHTML = "<p style='text-align:center; color:#999;'>Ошибка загрузки каталога.</p>";
             }
         }
 
@@ -113,15 +142,19 @@
             categoryScreen.style.display = "flex";
             categoryScreen.innerHTML = "";
 
+            let hasItems = false;
             for (const [catId, items] of Object.entries(catalog)) {
-                // Показываем категорию, только если в ней есть товары
                 if (items.length > 0) {
+                    hasItems = true;
                     const div = document.createElement('div');
                     div.className = 'category-item glass';
-                    div.innerHTML = `<span>${catTitles[catId]}</span><span style="color:#c7c7cc">›</span>`;
+                    div.innerHTML = `<span>${catTitles[catId]}</span><span style="color:#c7c7cc; font-size: 20px;">›</span>`;
                     div.onclick = () => renderProducts(catId);
                     categoryScreen.appendChild(div);
                 }
+            }
+            if (!hasItems) {
+                categoryScreen.innerHTML = "<p style='text-align:center; color:#666; font-weight:500;'>Пока нет товаров. Добавьте их через Админ-панель.</p>";
             }
         }
 
@@ -153,8 +186,7 @@
 
         function buy(id, name, price) {
             if (tg) tg.HapticFeedback.notificationOccurred('success');
-            const orderData = { id: id, name: name, price: price };
-            if (tg) { tg.sendData(JSON.stringify(orderData)); tg.close(); } 
+            if (tg) { tg.sendData(JSON.stringify({ id, name, price })); tg.close(); } 
             else { alert(`Куплено: ${name} за ${price} руб.`); }
         }
 
@@ -172,7 +204,7 @@
         const BASE_PRICE = 500; const PRICE_PER_KM = 15;
 
         function initMap() {
-            map = L.map('map').setView([HQ_LAT, HQ_LNG], 5);
+            map = L.map('map', { zoomControl: false }).setView([HQ_LAT, HQ_LNG], 5);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
             L.marker([HQ_LAT, HQ_LNG]).addTo(map).bindPopup("<b>Склад</b>").openPopup();
 
