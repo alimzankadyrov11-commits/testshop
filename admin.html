@@ -28,6 +28,25 @@
         }
         button:active { background: #ccc; }
         .success { color: #34c759; text-align: center; margin-top: 15px; font-weight: 600; display: none; }
+        
+        /* Стили для списка товаров */
+        .divider { height: 1px; background: #333; margin: 30px 0 20px; }
+        h3 { font-size: 18px; font-weight: 700; margin-bottom: 15px; text-align: center; }
+        .product-list { display: flex; flex-direction: column; gap: 10px; }
+        .admin-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #1c1c1e; padding: 12px 15px; border-radius: 12px; border: 1px solid #333;
+        }
+        .admin-item-info { flex: 1; overflow: hidden; }
+        .admin-item-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .admin-item-price { font-size: 12px; color: #888; margin-top: 4px; }
+        .delete-btn {
+            background: #ff3b30; color: white; border: none; padding: 8px 12px;
+            border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+            width: auto; margin: 0; margin-left: 10px; flex-shrink: 0;
+        }
+        .delete-btn:active { background: #cc2f26; }
+        .loading-text { text-align: center; color: #888; font-size: 14px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -93,6 +112,13 @@
     <button onclick="addProduct()">Добавить товар</button>
     <div id="msg" class="success">✅ Товар добавлен!</div>
 
+    <div class="divider"></div>
+
+    <h3>🗑 Управление товарами</h3>
+    <div id="product-list" class="product-list">
+        <div class="loading-text">Загрузка товаров...</div>
+    </div>
+
     <script>
         const tg = window.Telegram.WebApp;
         if (tg) tg.expand();
@@ -101,20 +127,72 @@
         const MASTER_KEY = "$2a$10$N4Bo3Ce.syteyZ3fcwyhMOLONFcaF6IszommguuY.EIpLqr4WUt3O";
         const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
+        // Загрузка всех товаров для списка удаления
+        async function loadProducts() {
+            const listContainer = document.getElementById('product-list');
+            try {
+                const res = await fetch(`${API_URL}/latest`, { headers: { 'X-Master-Key': MASTER_KEY } });
+                const data = await res.json();
+                let db = data.record;
+                
+                if (!db || Object.keys(db).length === 0) {
+                    listContainer.innerHTML = '<div class="loading-text">Товаров пока нет.</div>';
+                    return;
+                }
+
+                listContainer.innerHTML = '';
+                let hasProducts = false;
+
+                const catNames = { outerwear: "Верхняя одежда", tshirts: "Футболки", pants: "Штаны", shoes: "Обувь", accessories: "Аксессуары" };
+
+                // Проходимся по всем категориям
+                for (let cat in db) {
+                    if (!Array.isArray(db[cat])) continue;
+                    
+                    db[cat].forEach((product, index) => {
+                        hasProducts = true;
+                        
+                        // Значок валюты
+                        const currencySymbols = { 'KZT': '₸', 'RUB': '₽', 'UAH': '₴', 'BYN': 'Br' };
+                        const symbol = currencySymbols[product.currency] || '₸';
+
+                        const item = document.createElement('div');
+                        item.className = 'admin-item';
+                        item.innerHTML = `
+                            <div class="admin-item-info">
+                                <div class="admin-item-title">${product.name}</div>
+                                <div class="admin-item-price">${product.price} ${symbol} • ${catNames[cat] || cat}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteProduct('${cat}', '${product.id}')">Удалить</button>
+                        `;
+                        listContainer.appendChild(item);
+                    });
+                }
+
+                if (!hasProducts) {
+                    listContainer.innerHTML = '<div class="loading-text">Товаров пока нет.</div>';
+                }
+            } catch (e) {
+                listContainer.innerHTML = '<div class="loading-text" style="color:#ff3b30;">Ошибка загрузки списка</div>';
+            }
+        }
+
+        // Добавление товара
         async function addProduct() {
             const name = document.getElementById('name').value;
             const price = parseInt(document.getElementById('price').value);
             const stock = parseInt(document.getElementById('stock').value);
             const currency = document.getElementById('currency').value;
             const sizesStr = document.getElementById('sizes').value;
-            let photo = document.getElementById('photo').value;
+            let photo = document.getElementById('photo').value.trim();
             const gender = document.getElementById('gender').value;
             const category = document.getElementById('category').value;
 
-            if (!name || !price || !stock) { alert("Заполните поля!"); return; }
+            if (!name || isNaN(price) || isNaN(stock)) { alert("Заполните поля!"); return; }
+
+            if (!photo) photo = "https://via.placeholder.com/400x500?text=No+Image";
 
             let sizes = sizesStr ? sizesStr.split(',').map(s => s.trim()).filter(s => s) : [];
-            if (!photo) photo = "https://via.placeholder.com/400x500?text=No+Image";
 
             const newProduct = {
                 id: Date.now().toString(),
@@ -147,10 +225,43 @@
                 document.getElementById('photo').value = '';
 
                 if (tg) tg.HapticFeedback.notificationOccurred('success');
+                
+                // Обновляем список товаров внизу
+                loadProducts();
             } catch (e) {
                 alert("Ошибка: " + e.message);
             }
         }
+
+        // Удаление товара
+        async function deleteProduct(category, id) {
+            if (!confirm("Вы уверены, что хотите удалить этот товар?")) return;
+
+            try {
+                const res = await fetch(`${API_URL}/latest`, { headers: { 'X-Master-Key': MASTER_KEY } });
+                const data = await res.json();
+                let db = data.record;
+
+                // Фильтруем массив, оставляя только товары с другим ID
+                if (db[category]) {
+                    db[category] = db[category].filter(p => p.id !== id);
+                }
+
+                await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+                    body: JSON.stringify(db)
+                });
+
+                if (tg) tg.HapticFeedback.notificationOccurred('success');
+                loadProducts(); // Перерисовываем список
+            } catch (e) {
+                alert("Ошибка при удалении: " + e.message);
+            }
+        }
+
+        // Запускаем загрузку списка при открытии страницы
+        loadProducts();
     </script>
 </body>
 </html>
