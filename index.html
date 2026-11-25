@@ -74,6 +74,7 @@
             position: relative; background: var(--surface-color); border-radius: 16px;
             padding: 10px; display: flex; flex-direction: column; cursor: pointer;
         }
+        /* ФОТО ТЕПЕРЬ КВАДРАТНЫЕ */
         .product-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; background: #2c2c2e; }
         .product-card h3 { font-size: 14px; font-weight: 600; margin: 10px 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .product-card .price { font-size: 15px; font-weight: 700; color: var(--text-secondary); }
@@ -283,6 +284,14 @@
         let favorites = JSON.parse(localStorage.getItem('blvck_favs')) || [];
         let currentCategory = "Все";
 
+        // Словарь валют для значков
+        const CURRENCY_SYMBOLS = {
+            'KZT': '₸',
+            'RUB': '₽',
+            'UAH': '₴',
+            'BYN': 'Br'
+        };
+
         // Загрузка данных
         async function loadData() {
             try {
@@ -349,17 +358,22 @@
             });
         }
 
-        // Карточка товара
+        // Карточка товара (теперь с валютой и заглушкой для фото)
         function createProductCard(p) {
             const isFav = favorites.includes(p.id);
+            const imgSrc = p.photo || 'https://via.placeholder.com/400x500?text=No+Image';
+            
+            // Берем значок валюты, если нет — ставим тенге
+            const symbol = CURRENCY_SYMBOLS[p.currency] || '₸'; 
+
             return `
                 <div class="product-card" onclick="openProduct('${p.id}', '${p.catId}')">
                     <button class="heart-btn ${isFav ? 'active' : ''}" onclick="toggleFav(event, '${p.id}')">
                         <i data-feather="heart" style="width: 18px; height: 18px;"></i>
                     </button>
-                    <img src="${p.photo}" alt="${p.name}">
+                    <img src="${imgSrc}" alt="${p.name}" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x500?text=No+Image'">
                     <h3>${p.name}</h3>
-                    <div class="price">${p.price.toLocaleString()} ₸</div>
+                    <div class="price">${(p.price || 0).toLocaleString()} ${symbol}</div>
                 </div>
             `;
         }
@@ -452,11 +466,13 @@
             cart.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'cart-item';
+                // Подставляем правильный значок валюты
+                const symbol = CURRENCY_SYMBOLS[item.currency] || '₸';
                 div.innerHTML = `
-                    <img src="${item.photo}" alt="${item.name}">
+                    <img src="${item.photo || 'https://via.placeholder.com/400x500?text=No+Image'}" alt="${item.name}">
                     <div class="cart-info">
                         <h4>${item.name}</h4>
-                        <div class="price">${item.price.toLocaleString()} ₸</div>
+                        <div class="price">${item.price.toLocaleString()} ${symbol}</div>
                         <div class="qty-controls">
                             <button class="qty-btn" onclick="changeQty(${index}, -1)">−</button>
                             <span class="qty-val">${item.qty}</span>
